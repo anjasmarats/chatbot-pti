@@ -38,36 +38,36 @@ export default function App() {
     e.preventDefault();
     try {
       if (!input.trim()) return;
-      const userMsg = {
-        sender: "user",
-        text: input,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
       const res = await axios.post('http://localhost:5000/search', { query: input });
-        console.log(input)
+      console.log(input)
       if (res.data.message) {
         setMessage(res.data.message);
       } else {
-        console.log(res.data.results)
+        const userMsg = {
+          sender: "user",
+          text: input,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        console.log(res.data)
         // setResults(res.data.results);
+        setMessages((msgs) => [...msgs, userMsg]);
+        setMessages((msgs) => [
+          ...msgs,
+          {
+            sender: "bot",
+            text: res.data.results,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          },
+        ]);
       }
     } catch (error) {
       console.error(error)
       if (error.response) {console.log(error.response)}
       setMessage('Error searching');
     }
-    // setMessages((msgs) => [...msgs, userMsg]);
     // setInput("");
     // // Simulate bot reply after 1s
     // setTimeout(() => {
-    //   setMessages((msgs) => [
-    //     ...msgs,
-    //     {
-    //       sender: "bot",
-    //       text: "Ini adalah balasan otomatis dari chatbot. Silakan lanjutkan pertanyaan Anda.",
-    //       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    //     },
-    //   ]);
     // }, 1000);
   };
 
