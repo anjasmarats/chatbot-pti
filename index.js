@@ -224,9 +224,9 @@ app.post('/search', async (req, res) => {
     );
 
     // Filter results with similarity > 0.5 and sort by relevance
-    const sorted = results
+    const sorted = JSON.stringify(results
       .filter((r) => r.similarity > 0.5)
-      .sort((a, b) => b.similarity - a.similarity);
+      .sort((a, b) => b.similarity - a.similarity))
 
     if (sorted.length === 0) {
       return res.json({ message: 'No results found', results: [] });
