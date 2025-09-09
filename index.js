@@ -1,6 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const { pipeline } = require('@xenova/transformers');
+const { GoogleGenerativeAI } = require("@google/generative-ai")
+
+const API_KEY = "AIzaSyCUt934PSIt19DmdO8A3SO_ySBJaSba9MY"
+
+const genAI = new GoogleGenerativeAI(API_KEY)
+
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.5-pro-latest",
+    generationConfig: {
+      responseMimeType: "application/json",
+    },
+  });
 
 const app = express();
 const port = 5000;
@@ -78,6 +90,8 @@ app.post('/search', async (req, res) => {
       .sort((a, b) => b.similarity - a.similarity)
     
     let queryResult = "" 
+
+    
     
     for (let i = 0; i < sorted.length; i++) {
       // console.log(sorted[i].text)

@@ -39,16 +39,17 @@ export default function App() {
     try {
       if (!input.trim()) return;
       const res = await axios.post('http://localhost:5000/search', { query: input });
-      console.log(input)
+      // console.log(input)
       if (res.data.message) {
-        setMessage(res.data.message);
+        console.log(`res.data if = ${res.data}`)
+        setMessages((msgs) => [...msgs, res.data.message]);
       } else {
         const userMsg = {
           sender: "user",
           text: input,
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         };
-        console.log(res.data)
+        console.log(`res.data else = ${res.data}`)
         // setResults(res.data.results);
         setMessages((msgs) => [...msgs, userMsg]);
         setMessages((msgs) => [
