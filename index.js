@@ -8,7 +8,7 @@ const API_KEY = "AIzaSyCUt934PSIt19DmdO8A3SO_ySBJaSba9MY"
 const genAI = new GoogleGenerativeAI(API_KEY)
 
 const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-pro-latest",
+    model: "gemini-2.5-flash",
     generationConfig: {
       responseMimeType: "application/json",
     },
@@ -59,6 +59,7 @@ function cosineSimilarity(vecA, vecB) {
   for (let i = 0; i < vecA.length; i++) {
     dotProduct += vecA[i] * vecB[i];
   }
+
   const magA = Math.sqrt(vecA.reduce((sum, val) => sum + val ** 2, 0));
   const magB = Math.sqrt(vecB.reduce((sum, val) => sum + val ** 2, 0));
   
@@ -90,19 +91,27 @@ app.post('/search', async (req, res) => {
       .sort((a, b) => b.similarity - a.similarity)
     
     let queryResult = "" 
-
     
+    if (sorted.length === 0) {
+      const queryResult = await model.generateContent(`
+            ${query}
+            Analisis itu dan berikan output analisisnya berdasarkan JSON :
+            {
+              "analytics":{
+                "result":"....",
+                "category":"...."
+              }
+            }
+        `)
+        console.log(queryResult.response.text())
+      return res.json({ message: 'No results found', results: null });
+    }
     
     for (let i = 0; i < sorted.length; i++) {
       // console.log(sorted[i].text)
       queryResult = `${queryResult} ${sorted[i].text}`
     }
 
-    console.log(queryResult)
-
-    if (sorted.length === 0 || queryResult.length === 0) {
-      return res.json({ message: 'No results found', results: [] });
-    }
     res.json({ results: queryResult });
   } catch (error) {
     console.error('Search error:', error);

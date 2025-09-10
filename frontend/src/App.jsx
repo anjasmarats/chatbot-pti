@@ -40,8 +40,8 @@ export default function App() {
       if (!input.trim()) return;
       const res = await axios.post('http://localhost:5000/search', { query: input });
       // console.log(input)
-      if (res.data.message) {
-        console.log(`res.data if = ${res.data}`)
+      if (!res.data.results) {
+        console.log(`res.data if = ${res.data.results}`)
         setMessages((msgs) => [...msgs, res.data.message]);
       } else {
         const userMsg = {
