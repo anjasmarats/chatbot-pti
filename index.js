@@ -2,6 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const { pipeline } = require('@xenova/transformers');
 const { GoogleGenerativeAI } = require("@google/generative-ai")
+const { Feedback,sequelize } = require("./models")
+
+// Optional: sinkronisasi (jalankan sekali atau di bootstrap aplikasi)
+sequelize.authenticate();
+sequelize.sync({ alter: true }); // gunakan { force: true } hanya jika ingin drop+create
+console.log('Database connected and models synced');
 
 const API_KEY = "AIzaSyCUt934PSIt19DmdO8A3SO_ySBJaSba9MY"
 
@@ -99,11 +105,17 @@ app.post('/search', async (req, res) => {
             {
               "analytics":{
                 "result":"....",
-                "category":"...."
+                "isContainPositive":"...."
               }
             }
         `)
-        console.log(queryResult.response.text())
+        const result = JSON.parse(queryResult.response.text())
+        console.log(result.analytics)
+
+        await Feedback.create({
+          content: query,
+          analysis: result.analytics.result
+        })
       return res.json({ message: 'No results found', results: null });
     }
     
