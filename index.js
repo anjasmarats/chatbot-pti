@@ -131,4 +131,17 @@ app.post('/search', async (req, res) => {
   }
 });
 
+app.get('/analytics', async (req, res) => {
+  try {
+    const analytics = await Feedback.findAll({
+      // attributes: ['id', 'content', 'analysis', 'createdAt', 'updatedAt'],
+      order: [['createdAt', 'DESC']],
+    });
+    res.json({ success: true, data: analytics });
+  } catch (error) {
+    console.error('Fetch analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+});
+
 app.listen(port, () => console.log(`Backend running on port ${port}`));

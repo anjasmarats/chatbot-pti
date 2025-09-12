@@ -162,6 +162,38 @@ export default function Review() {
   // Simulasi role user: "admin" atau "user"
   const [role, setRole] = useState("admin");
 
+  const [analytics, setAnalytics] = useState(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState(null);
+
+  // Fetch analytics from server route "/analytics"
+  useEffect(() => {
+    let mounted = true;
+    const fetchAnalytics = async () => {
+      setLoadingAnalytics(true);
+      setAnalyticsError(null);
+      try {
+        const res = await fetch("/analytics", {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          credentials: "same-origin",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        if (mounted) setAnalytics(json);
+      } catch (err) {
+        if (mounted) setAnalyticsError(err.message || "Failed to load analytics");
+      } finally {
+        if (mounted) setLoadingAnalytics(false);
+      }
+    };
+
+    fetchAnalytics();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className="dashboard-container">
       {/* Header */}
