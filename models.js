@@ -54,7 +54,11 @@ const Feedback = sequelize.define('Feedback', {
     },
     analysis: {
         type: DataTypes.TEXT, // kolom tipe TEXT untuk menyimpan hasil analisis teks (opsional)
-        allowNull: true
+        allowNull: false
+    },
+    category:{
+        type: DataTypes.BOOLEAN,
+        allowNull: false
     }
 }, {
     tableName: 'feedback',

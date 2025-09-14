@@ -105,7 +105,7 @@ app.post('/search', async (req, res) => {
             {
               "analytics":{
                 "result":"....",
-                "isContainPositive":"...."
+                "isContainPositive":
               }
             }
         `)
@@ -114,7 +114,8 @@ app.post('/search', async (req, res) => {
 
         await Feedback.create({
           content: query,
-          analysis: result.analytics.result
+          analysis: result.analytics.result,
+          category: result.analytics.isContainPositive
         })
       return res.json({ message: 'No results found', results: null });
     }
