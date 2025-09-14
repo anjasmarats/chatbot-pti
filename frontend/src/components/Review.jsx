@@ -41,56 +41,56 @@ const feedbackData = [
   }
 ];
 
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 // Komponen grafik sederhana (pie chart) untuk statistik sentimen feedback
-function SentimentChart({ data }) {
+function SentimentChart({ feedback }) {
   // Hitung jumlah sentimen
-  const sentimentCount = data.reduce(
-    (acc, item) => {
-      acc[item.aiResult.sentiment]++;
-      return acc;
-    },
-    { positive: 0, negative: 0 }
-  );
-  const total = sentimentCount.positive + sentimentCount.negative;
-  const positivePercent = (sentimentCount.positive / total) * 100;
-  const negativePercent = (sentimentCount.negative / total) * 100;
+  // const sentimentCount = data.reduce(
+  //   (acc, item) => {
+  //     acc[item.aiResult.sentiment]++;
+  //     return acc;
+  //   },
+  //   { positive: 0, negative: 0 }
+  // );
+  // const total = sentimentCount.positive + sentimentCount.negative;
+  // const positivePercent = (sentimentCount.positive / total) * 100;
+  // const negativePercent = (sentimentCount.negative / total) * 100;
+
+  const data = {
+    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+    datasets: [
+      {
+        label: '# of Votes',
+        data: [12, 19, 3, 5, 2, 3],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  }
 
   // Pie chart dengan SVG
   return (
-    <div style={{ width: 120, height: 120, margin: "0 auto" }}>
-      <svg width="120" height="120" viewBox="0 0 32 32">
-        {/* Positive (Hijau) */}
-        <circle
-          r="16"
-          cx="16"
-          cy="16"
-          fill="transparent"
-          stroke="#22c55e"
-          strokeWidth="8"
-          strokeDasharray={`${positivePercent} ${100 - positivePercent}`}
-          strokeDashoffset="25"
-        />
-        {/* Negative (Merah) */}
-        <circle
-          r="16"
-          cx="16"
-          cy="16"
-          fill="transparent"
-          stroke="#ef4444"
-          strokeWidth="8"
-          strokeDasharray={`${negativePercent} ${100 - negativePercent}`}
-          strokeDashoffset={25 + (positivePercent / 100) * 100}
-        />
-      </svg>
-      <div style={{ textAlign: "center", marginTop: 8 }}>
-        <span style={{ color: "#22c55e", fontWeight: 600 }}>
-          {sentimentCount.positive} Positif
-        </span>
-        {" | "}
-        <span style={{ color: "#ef4444", fontWeight: 600 }}>
-          {sentimentCount.negative} Negatif
-        </span>
-      </div>
+    <div style={{ width: 400, height: 400, margin: "0 auto" }}>
+      <Pie data={data} options={{ responsive:true }}/>
     </div>
   );
 }
