@@ -67,6 +67,8 @@ export default function App() {
         ]);
       }
     } catch (error) {
+      console.log("error")
+      console.log(error)
       if (error.response) {console.log(error.response)}
       setMessage('Error');
     }
