@@ -10,9 +10,9 @@ import { Pie } from 'react-chartjs-2';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Komponen grafik sederhana (pie chart) untuk statistik sentimen feedback
-function SentimentChart({feedback}) {
-  console.log("feedback data",feedback)
-  let positive = 0,negative = 0
+function SentimentChart({ feedback }) {
+  console.log("feedback data", feedback)
+  let positive = 0, negative = 0
   for (let i = 0; i < feedback.length; i++) {
     if (feedback[i].category) {
       // console.log("category positif")
@@ -22,16 +22,16 @@ function SentimentChart({feedback}) {
       negative++
     }
   }
-  console.log(negative,positive)
+  console.log(negative, positive)
 
   const data = {
     labels: ['negative', 'green'],
     datasets: [
       {
         label: '# of Votes',
-        data: [negative,positive],
+        data: [negative, positive],
         backgroundColor: [
-          "red","green"
+          "red", "green"
         ],
         borderWidth: 1,
       },
@@ -40,8 +40,8 @@ function SentimentChart({feedback}) {
 
   // Pie chart dengan SVG
   return (
-    <div style={{ width: 400, margin: "0 auto", minHeight: "66vh",maxHeight: "66vh"}}>
-      <Pie data={data} options={{ responsive:true }}/>
+    <div style={{ width: 400, margin: "auto", minHeight: "20vh", maxHeight: "66vh", display:"flex",justifyContent:"center" }}>
+      <Pie data={data} options={{ responsive: true }} />
     </div>
   );
 }
@@ -57,7 +57,7 @@ function FeedbackCardAdmin({ feedback }) {
           <div className="ai-summary">{feedback.analysis}</div>
           <div className="ai-tags">
             <span className="tag">
-              #{feedback.category?'positif':'negatif'}
+              #{feedback.category ? 'positif' : 'negatif'}
             </span>
           </div>
         </div>
@@ -89,7 +89,7 @@ function FeedbackCardUser({ feedback }) {
           <div className="ai-summary">{feedback.analysis}</div>
           <div className="ai-tags">
             <span className="tag">
-              #{feedback.category?'positif':'negatif'}
+              #{feedback.category ? 'positif' : 'negatif'}
             </span>
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function Review() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (mounted) setAnalytics(json.data);
-        console.log("data",json.data)
+        console.log("data", json.data)
       } catch (err) {
         if (mounted) setAnalyticsError(err.message || "Failed to load analytics");
       } finally {
@@ -145,81 +145,87 @@ export default function Review() {
 
   return (
     <div className="dashboard-container">
-      /* Header */
-        <header className="dashboard-header">
-          <FaChartBar size={32} color="#2563eb" />
-          <h1>
-            Dashboard Feedback{" "}
-            <span style={{ color: "#22c55e" }}>
-          {role === "admin" ? "Admin" : "User"}
-            </span>
-          </h1>
-          {/* Switch role untuk demo */}
-          <div className="role-switch">
-            <button
-          className={role === "admin" ? "active" : ""}
-          onClick={() => setRole("admin")}
-            >
-          Admin
-            </button>
-            <button
-          className={role === "user" ? "active" : ""}
-          onClick={() => setRole("user")}
-            >
-          User
-            </button>
-          </div>
-          {/* Link ke halaman chatbot */}
-          <a
-            href="/"
-            className="chatbot-link"
-            title="Go to Chatbot"
+      <header className="dashboard-header" style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        position: "fixed",
+        top: 0,
+        minWidth: "390px",
+        width: "100%"
+      }}>
+        <FaChartBar size={32} color="#2563eb" />
+        <h1>
+          Dashboard Feedback{" "}
+          <span style={{ color: "#22c55e" }}>
+            {role === "admin" ? "Admin" : "User"}
+          </span>
+        </h1>
+        {/* Switch role untuk demo */}
+        <div className="role-switch">
+          <button
+            className={role === "admin" ? "active" : ""}
+            onClick={() => setRole("admin")}
+          >
+            Admin
+          </button>
+          <button
+            className={role === "user" ? "active" : ""}
+            onClick={() => setRole("user")}
+          >
+            User
+          </button>
+        </div>
+        {/* Link ke halaman chatbot */}
+        <a
+          href="/"
+          className="chatbot-link"
+          title="Go to Chatbot"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "linear-gradient(90deg,#2563eb 0%,#22c55e 100%)",
+            color: "#fff",
+            borderRadius: "999px",
+            padding: "8px 18px",
+            fontWeight: 700,
+            fontSize: "1rem",
+            boxShadow: "0 2px 8px #2563eb33",
+            textDecoration: "none",
+            transition: "transform 0.15s, box-shadow 0.15s",
+            marginLeft: "16px"
+          }}
+          onMouseOver={e => {
+            e.currentTarget.style.transform = "scale(1.07)";
+            e.currentTarget.style.boxShadow = "0 4px 16px #22c55e33";
+          }}
+          onMouseOut={e => {
+            e.currentTarget.style.transform = "";
+            e.currentTarget.style.boxShadow = "0 2px 8px #2563eb33";
+          }}
+        >
+          <FaRobot size={22} style={{ filter: "drop-shadow(0 0 2px #fff)" }} />
+          <span>Chatbot</span>
+          <span
             style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          background: "linear-gradient(90deg,#2563eb 0%,#22c55e 100%)",
-          color: "#fff",
-          borderRadius: "999px",
-          padding: "8px 18px",
-          fontWeight: 700,
-          fontSize: "1rem",
-          boxShadow: "0 2px 8px #2563eb33",
-          textDecoration: "none",
-          transition: "transform 0.15s, box-shadow 0.15s",
-          marginLeft: "16px"
-            }}
-            onMouseOver={e => {
-          e.currentTarget.style.transform = "scale(1.07)";
-          e.currentTarget.style.boxShadow = "0 4px 16px #22c55e33";
-            }}
-            onMouseOut={e => {
-          e.currentTarget.style.transform = "";
-          e.currentTarget.style.boxShadow = "0 2px 8px #2563eb33";
+              background: "#fff",
+              color: "#22c55e",
+              borderRadius: "50%",
+              padding: "2px 7px",
+              fontSize: "0.85rem",
+              fontWeight: 800,
+              marginLeft: "2px",
+              boxShadow: "0 1px 4px #2563eb22"
             }}
           >
-            <FaRobot size={22} style={{ filter: "drop-shadow(0 0 2px #fff)" }} />
-            <span>Chatbot</span>
-            <span
-          style={{
-            background: "#fff",
-            color: "#22c55e",
-            borderRadius: "50%",
-            padding: "2px 7px",
-            fontSize: "0.85rem",
-            fontWeight: 800,
-            marginLeft: "2px",
-            boxShadow: "0 1px 4px #2563eb22"
-          }}
-            >
-          &rarr;
-            </span>
-          </a>
-        </header>
-
-        {/* Statistik grafik untuk admin */}
+            &rarr;
+          </span>
+        </a>
+      </header>
+      {/* Statistik grafik untuk admin */}
       {role === "admin" && (
-        <section className="dashboard-stats">
+        <section className="dashboard-stats" style={{ margin: "auto"}}>
           <div className="stat-card">
             <SentimentChart feedback={analytics} />
             <div className="stat-label">Statistik Sentimen Feedback</div>
@@ -230,12 +236,12 @@ export default function Review() {
       {/* Daftar feedback */}
       <section className="dashboard-feedback-list">
         {role === "admin"
-          ? analytics.map((value,key) => (
-              <FeedbackCardAdmin feedback={value} key={key} />
-            ))
-          : analytics.map((value,key) => (
-              <FeedbackCardUser feedback={value} key={key} />
-            ))}
+          ? analytics.map((value, key) => (
+            <FeedbackCardAdmin feedback={value} key={key} />
+          ))
+          : analytics.map((value, key) => (
+            <FeedbackCardUser feedback={value} key={key} />
+          ))}
       </section>
 
       {/* Footer */}
@@ -261,10 +267,7 @@ export default function Review() {
           padding: 24px 8px 0 8px;
         }
         .dashboard-header {
-          display: flex;
-          align-items: center;
           gap: 16px;
-          justify-content: space-between;
           background: #fff;
           border-radius: 18px;
           box-shadow: 0 2px 16px 0 #0001;
@@ -300,11 +303,12 @@ export default function Review() {
         .dashboard-stats {
           display: flex;
           gap: 24px;
-          min-height: 76vh;
+          min-height: 20vh;
           max-height: 76vh;
           flex-wrap: wrap;
         }
         .stat-card {
+          // position: fixed;
           background: #fff;
           border-radius: 16px;
           box-shadow: 0 1px 8px 0 #0001;

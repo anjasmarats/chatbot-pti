@@ -93,7 +93,7 @@ app.post('/search', async (req, res) => {
 
     // Filter results with similarity > 0.5 and sort by relevance
     const sorted = results
-      .filter((r) => r.similarity > 0.5)
+      .filter((r) => r.similarity > 0.8)
       .sort((a, b) => b.similarity - a.similarity)
     
     let queryResult = "" 
@@ -101,7 +101,7 @@ app.post('/search', async (req, res) => {
     if (sorted.length === 0) {
       const queryResult = await model.generateContent(`
             ${query}
-            Analisis itu dan berikan output analisisnya berdasarkan JSON :
+            Analisis itu dalam bahasa indonesia formal dan baik serta berikan output analisisnya berdasarkan JSON :
             {
               "analytics":{
                 "result":"....",
@@ -117,7 +117,7 @@ app.post('/search', async (req, res) => {
           analysis: result.analytics.result,
           category: result.analytics.isContainPositive
         })
-      return res.json({ message: 'No results found', results: null });
+      return res.json({ message: 'No results found', results: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini" });
     }
     
     for (let i = 0; i < sorted.length; i++) {
