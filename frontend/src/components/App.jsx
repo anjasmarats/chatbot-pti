@@ -19,6 +19,7 @@ export default function App() {
   ]);
   // State for input
   const [input, setInput] = useState("");
+  const [loading,setLoading] = useState(false)
   // Ref for chat container (for auto-scroll)
   const chatRef = useRef(null);
 
@@ -39,20 +40,23 @@ export default function App() {
     e.preventDefault();
     try {
       if (!input.trim()) return;
+      setLoading(true)
+      const userMsg = {
+        sender: "user",
+        text: input,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+      // setResults(res.data.results);
+      setMessages((msgs) => [...msgs, userMsg]);
       const res = await axios.post(`${url}/search`, { query: input });
       // console.log(input)
       if (!res.data.results) {
+        setLoading(false)
         console.log(`res.data if = ${res.data.results}`)
         setMessages((msgs) => [...msgs, res.data.message]);
       } else {
-        const userMsg = {
-          sender: "user",
-          text: input,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        };
+        setLoading(false)
         console.log(`res.data else = ${res.data}`)
-        // setResults(res.data.results);
-        setMessages((msgs) => [...msgs, userMsg]);
         setMessages((msgs) => [
           ...msgs,
           {
@@ -63,9 +67,8 @@ export default function App() {
         ]);
       }
     } catch (error) {
-      console.error(error)
       if (error.response) {console.log(error.response)}
-      setMessage('Error searching');
+      setMessage('Error');
     }
     // setInput("");
     // // Simulate bot reply after 1s
@@ -85,6 +88,40 @@ export default function App() {
             <h1 className="chat-title">AI Chatbot</h1>
             <p className="chat-desc">Selamat datang! Chatbot siap membantu Anda.</p>
           </div>
+          <a
+            href="/dashboard"
+            className="dashboard-link"
+            title="Review Dashboard Analytics & Feedback"
+            aria-label="Review Dashboard Analytics & Feedback"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              textDecoration: "none",
+              background: "linear-gradient(90deg, #3a8dde 0%, #ff5858 100%)",
+              color: "#fff",
+              padding: "0.5rem 1rem",
+              borderRadius: "1.2rem",
+              fontWeight: 600,
+              boxShadow: "0 2px 8px 0 rgba(58, 141, 222, 0.12)",
+              transition: "background 0.2s, transform 0.1s",
+            }}
+            onMouseOver={e => e.currentTarget.style.background = "linear-gradient(90deg, #43e97b 0%, #38f9d7 100%)"}
+            onMouseOut={e => e.currentTarget.style.background = "linear-gradient(90deg, #3a8dde 0%, #ff5858 100%)"}
+          >
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <rect x="3" y="7" width="18" height="10" rx="2" fill="#fff" opacity="0.18"/>
+              <rect x="6" y="10" width="3" height="4" rx="1" fill="#fff"/>
+              <rect x="10.5" y="8" width="3" height="6" rx="1" fill="#fff"/>
+              <rect x="15" y="12" width="3" height="2" rx="1" fill="#fff"/>
+              <circle cx="20" cy="6" r="2" fill="#ff5858"/>
+              <circle cx="4" cy="6" r="2" fill="#43e97b"/>
+            </svg>
+            <span style={{fontSize: "0.98rem"}}>analisis</span>
+          </a>
         </header>
         {/* Chat messages */}
         <main className="chat-main" ref={chatRef} tabIndex={0} aria-label="Chat messages">
@@ -108,6 +145,19 @@ export default function App() {
               <div className="bubble-text">{msg.text}</div>
             </div>
           ))}
+          {(loading || message) && (<div
+              className={`chat-bubble bot`}
+              aria-live="polite"
+            >
+              <div className="bubble-header">
+                <FaRobot className="bubble-icon bot" />
+                <span className="bubble-sender">
+                  Bot
+                </span>
+                <span className="bubble-time">&nbsp;</span>
+              </div>
+              <div className="bubble-text">{message||"Please Wait"}</div>
+            </div>)}
         </main>
         {/* Input form */}
         <form className="chat-input-form" onSubmit={handleSend} autoComplete="off">
@@ -143,13 +193,13 @@ export default function App() {
       <style>{`
         /* Background gradient with green, blue, red */
         .chat-bg {
-          min-height: 100vh;
-          width: 100vw;
+          width: 100%;
           background: linear-gradient(135deg, #43e97b 0%, #38f9d7 40%, #3a8dde 70%, #ff5858 100%);
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 2vw;
+          min-height: 100vh;
+          max-height: 100vh;
         }
         /* Chat container */
         .chat-container {
@@ -197,6 +247,8 @@ export default function App() {
         .chat-main {
           flex: 1;
           overflow-y: auto;
+          min-height: 70vh;
+          max-height: 70vh;
           padding: 1.2rem;
           background: linear-gradient(120deg, #f8fff8 0%, #f0f8ff 100%);
           display: flex;

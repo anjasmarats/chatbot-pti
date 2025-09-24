@@ -4,83 +4,34 @@ import { url } from "../scripts/url";
 
 // Import react-icons untuk icon yang menarik
 
-// Contoh data feedback (biasanya diambil dari API/backend)
-const feedbackData = [
-  {
-    id: 1,
-    user: "Budi",
-    question: "Bagaimana cara memperbaiki error pada aplikasi?",
-    aiResult: {
-      summary: "Pengguna mengalami error pada aplikasi. Disarankan untuk memeriksa koneksi internet dan mengupdate aplikasi ke versi terbaru.",
-      sentiment: "positive",
-      tags: ["error", "update", "internet"]
-    },
-    date: "2024-06-01"
-  },
-  {
-    id: 2,
-    user: "Siti",
-    question: "Aplikasi sering crash saat dibuka.",
-    aiResult: {
-      summary: "Pengguna melaporkan aplikasi sering crash. Disarankan untuk reinstall aplikasi dan menghapus cache.",
-      sentiment: "negative",
-      tags: ["crash", "reinstall", "cache"]
-    },
-    date: "2024-06-02"
-  },
-  {
-    id: 3,
-    user: "Andi",
-    question: "Fitur baru sangat membantu pekerjaan saya.",
-    aiResult: {
-      summary: "Pengguna merasa fitur baru sangat membantu.",
-      sentiment: "positive",
-      tags: ["fitur baru", "pujian"]
-    },
-    date: "2024-06-03"
-  }
-];
-
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Komponen grafik sederhana (pie chart) untuk statistik sentimen feedback
-function SentimentChart({ feedback }) {
-  // Hitung jumlah sentimen
-  // const sentimentCount = data.reduce(
-  //   (acc, item) => {
-  //     acc[item.aiResult.sentiment]++;
-  //     return acc;
-  //   },
-  //   { positive: 0, negative: 0 }
-  // );
-  // const total = sentimentCount.positive + sentimentCount.negative;
-  // const positivePercent = (sentimentCount.positive / total) * 100;
-  // const negativePercent = (sentimentCount.negative / total) * 100;
+function SentimentChart({feedback}) {
+  console.log("feedback data",feedback)
+  let positive = 0,negative = 0
+  for (let i = 0; i < feedback.length; i++) {
+    if (feedback[i].category) {
+      // console.log("category positif")
+      positive++
+    } else {
+      // console.log("category negatif")
+      negative++
+    }
+  }
+  console.log(negative,positive)
 
   const data = {
-    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+    labels: ['negative', 'green'],
     datasets: [
       {
         label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
+        data: [negative,positive],
         backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)',
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)',
+          "red","green"
         ],
         borderWidth: 1,
       },
@@ -89,7 +40,7 @@ function SentimentChart({ feedback }) {
 
   // Pie chart dengan SVG
   return (
-    <div style={{ width: 400, height: 400, margin: "0 auto" }}>
+    <div style={{ width: 400, margin: "0 auto", minHeight: "66vh",maxHeight: "66vh"}}>
       <Pie data={data} options={{ responsive:true }}/>
     </div>
   );
@@ -178,7 +129,7 @@ export default function Review() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (mounted) setAnalytics(json.data);
-        console.log(json.data)
+        console.log("data",json.data)
       } catch (err) {
         if (mounted) setAnalyticsError(err.message || "Failed to load analytics");
       } finally {
@@ -194,37 +145,83 @@ export default function Review() {
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
-      <header className="dashboard-header">
-        <FaChartBar size={32} color="#2563eb" />
-        <h1>
-          Dashboard Feedback{" "}
-          <span style={{ color: "#22c55e" }}>
-            {role === "admin" ? "Admin" : "User"}
-          </span>
-        </h1>
-        {/* Switch role untuk demo */}
-        <div className="role-switch">
-          <button
-            className={role === "admin" ? "active" : ""}
-            onClick={() => setRole("admin")}
+      /* Header */
+        <header className="dashboard-header">
+          <FaChartBar size={32} color="#2563eb" />
+          <h1>
+            Dashboard Feedback{" "}
+            <span style={{ color: "#22c55e" }}>
+          {role === "admin" ? "Admin" : "User"}
+            </span>
+          </h1>
+          {/* Switch role untuk demo */}
+          <div className="role-switch">
+            <button
+          className={role === "admin" ? "active" : ""}
+          onClick={() => setRole("admin")}
+            >
+          Admin
+            </button>
+            <button
+          className={role === "user" ? "active" : ""}
+          onClick={() => setRole("user")}
+            >
+          User
+            </button>
+          </div>
+          {/* Link ke halaman chatbot */}
+          <a
+            href="/"
+            className="chatbot-link"
+            title="Go to Chatbot"
+            style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          background: "linear-gradient(90deg,#2563eb 0%,#22c55e 100%)",
+          color: "#fff",
+          borderRadius: "999px",
+          padding: "8px 18px",
+          fontWeight: 700,
+          fontSize: "1rem",
+          boxShadow: "0 2px 8px #2563eb33",
+          textDecoration: "none",
+          transition: "transform 0.15s, box-shadow 0.15s",
+          marginLeft: "16px"
+            }}
+            onMouseOver={e => {
+          e.currentTarget.style.transform = "scale(1.07)";
+          e.currentTarget.style.boxShadow = "0 4px 16px #22c55e33";
+            }}
+            onMouseOut={e => {
+          e.currentTarget.style.transform = "";
+          e.currentTarget.style.boxShadow = "0 2px 8px #2563eb33";
+            }}
           >
-            Admin
-          </button>
-          <button
-            className={role === "user" ? "active" : ""}
-            onClick={() => setRole("user")}
-          >
-            User
-          </button>
-        </div>
-      </header>
+            <FaRobot size={22} style={{ filter: "drop-shadow(0 0 2px #fff)" }} />
+            <span>Chatbot</span>
+            <span
+          style={{
+            background: "#fff",
+            color: "#22c55e",
+            borderRadius: "50%",
+            padding: "2px 7px",
+            fontSize: "0.85rem",
+            fontWeight: 800,
+            marginLeft: "2px",
+            boxShadow: "0 1px 4px #2563eb22"
+          }}
+            >
+          &rarr;
+            </span>
+          </a>
+        </header>
 
-      {/* Statistik grafik untuk admin */}
+        {/* Statistik grafik untuk admin */}
       {role === "admin" && (
         <section className="dashboard-stats">
           <div className="stat-card">
-            <SentimentChart data={feedbackData} />
+            <SentimentChart feedback={analytics} />
             <div className="stat-label">Statistik Sentimen Feedback</div>
           </div>
         </section>
@@ -257,7 +254,9 @@ export default function Review() {
           background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
         }
         .dashboard-container {
-          max-width: 900px;
+          min-height: 98vh;
+          max-height: 98vh;
+          width: 100%;
           margin: 0 auto;
           padding: 24px 8px 0 8px;
         }
@@ -301,7 +300,8 @@ export default function Review() {
         .dashboard-stats {
           display: flex;
           gap: 24px;
-          margin-bottom: 24px;
+          min-height: 76vh;
+          max-height: 76vh;
           flex-wrap: wrap;
         }
         .stat-card {
@@ -309,8 +309,8 @@ export default function Review() {
           border-radius: 16px;
           box-shadow: 0 1px 8px 0 #0001;
           padding: 18px 24px;
-          flex: 1;
-          min-width: 260px;
+          width: 100%;
+          min-width: 200px;
           text-align: center;
         }
         .stat-label {
@@ -393,11 +393,14 @@ export default function Review() {
           font-size: 0.9rem;
         }
         .dashboard-footer {
-          margin-top: 40px;
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
           text-align: center;
           color: #64748b;
           font-size: 1rem;
-          padding: 18px 0 8px 0;
+          padding: 18px 0 18px 0;
         }
         /* Responsive Design */
         @media (max-width: 700px) {

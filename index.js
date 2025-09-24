@@ -125,6 +125,8 @@ app.post('/search', async (req, res) => {
       queryResult = `${queryResult} ${sorted[i].text}`
     }
 
+    console.log("queryResult",queryResult)
+
     res.json({ results: queryResult });
   } catch (error) {
     console.error('Search error:', error);
