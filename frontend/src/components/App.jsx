@@ -40,6 +40,7 @@ export default function App() {
     e.preventDefault();
     try {
       if (!input.trim()) return;
+      setInput("")
       setLoading(true)
       const userMsg = {
         sender: "user",
