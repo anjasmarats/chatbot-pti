@@ -4,6 +4,7 @@ import '../styles/index.css'
 import App from './App.jsx'
 import Review from './Review.jsx'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import LoginPage from './LoginPage.jsx'
 
 createRoot(document.getElementById('root')).render(
   <Router>
