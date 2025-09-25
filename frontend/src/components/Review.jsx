@@ -397,6 +397,7 @@ export default function Review() {
           font-size: 0.9rem;
         }
         .dashboard-footer {
+          background-color:white;
           position: fixed;
           left: 0;
           right: 0;
