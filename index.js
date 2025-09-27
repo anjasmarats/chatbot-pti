@@ -93,7 +93,7 @@ app.post('/search', async (req, res) => {
 
     // Filter results with similarity > 0.5 and sort by relevance
     const sorted = results
-      .filter((r) => r.similarity > 0.8)
+      .filter((r) => r.similarity > 0.6)
       .sort((a, b) => b.similarity - a.similarity)
     
     let queryResult = "" 
