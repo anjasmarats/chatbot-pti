@@ -7,21 +7,74 @@ import { url } from "../scripts/url.js";
 
 // Main App Component
 export default function App() {
-  // pesan penampungan error
-  const [message, setMessage] = useState('');
-  // State for chat messages
-  const [messages, setMessages] = useState([
-    {
-      sender: "bot",
-      text: "Halo! Ada yang bisa saya bantu hari ini? 😊",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    },
-  ]);
-  // State for input
-  const [input, setInput] = useState("");
+  // // pesan penampungan error
+  // const [message, setMessage] = useState('');
+  // // State for chat messages
+  // const [messages, setMessages] = useState([
+  //   {
+  //     sender: "bot",
+  //     text: "Halo! Ada yang bisa saya bantu hari ini? 😊",
+  //     time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  //   },
+  // ]);
+  // // State for input
+  // const [input, setInput] = useState("");
+  // const [loading,setLoading] = useState(false)
+  // // Ref for chat container (for auto-scroll)
+
+  // // Handle sending message
+  // const handleSend = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     if (!input.trim()) return;
+  //     setInput("")
+  //     setLoading(true)
+  //     const userMsg = {
+  //       sender: "user",
+  //       text: input,
+  //       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  //     };
+  //     // setResults(res.data.results);
+  //     setMessages((msgs) => [...msgs, userMsg]);
+  //     const res = await axios.post(`${url}/search`, { query: input });
+  //     // console.log(input)
+  //     if (!res.data.results) {
+  //       setLoading(false)
+  //       console.log(`res.data if = ${res.data.results}`)
+  //       setMessages((msgs) => [...msgs, res.data.message]);
+  //     } else {
+  //       setLoading(false)
+  //       console.log(`res.data else = ${res.data}`)
+  //       setMessages((msgs) => [
+  //         ...msgs,
+  //         {
+  //           sender: "bot",
+  //           text: res.data.results,
+  //           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  //         },
+  //       ]);
+  //     }
+  //   } catch (error) {
+  //     console.log("error")
+  //     console.log(error)
+  //     if (error.response) {console.log(error.response)}
+  //     setMessage('Error');
+  //   }
+  //   // setInput("");
+  //   // // Simulate bot reply after 1s
+  //   // setTimeout(() => {
+  //   // }, 1000);
+  // };
+
+    const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [sessionId, setSessionId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [waitingForInput, setWaitingForInput] = useState(false);
+  const messagesEndRef = useRef(null);
   const [loading,setLoading] = useState(false)
-  // Ref for chat container (for auto-scroll)
-  const chatRef = useRef(null);
+
+    const chatRef = useRef(null);
 
   // Custom hook to auto-scroll chat to bottom
   function useAutoScroll(ref, deps) {
@@ -35,48 +88,124 @@ export default function App() {
   // Auto-scroll to bottom when messages change
   useAutoScroll(chatRef, [messages]);
 
-  // Handle sending message
-  const handleSend = async (e) => {
-    e.preventDefault();
-    try {
-      if (!input.trim()) return;
-      setInput("")
-      setLoading(true)
-      const userMsg = {
-        sender: "user",
-        text: input,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      // setResults(res.data.results);
-      setMessages((msgs) => [...msgs, userMsg]);
-      const res = await axios.post(`${url}/search`, { query: input });
-      // console.log(input)
-      if (!res.data.results) {
-        setLoading(false)
-        console.log(`res.data if = ${res.data.results}`)
-        setMessages((msgs) => [...msgs, res.data.message]);
-      } else {
-        setLoading(false)
-        console.log(`res.data else = ${res.data}`)
-        setMessages((msgs) => [
-          ...msgs,
-          {
-            sender: "bot",
-            text: res.data.results,
-            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          },
-        ]);
+  // Generate session ID unik
+  const generateSessionId = () => {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  // Scroll ke pesan terbaru
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Memulai chat session
+  useEffect(() => {
+    const startChat = async () => {
+      const newSessionId = generateSessionId();
+      setSessionId(newSessionId);
+      
+      try {
+        setIsLoading(true);
+        const response = await axios.post('/api/chat/start', {
+          sessionId: newSessionId
+        });
+        
+        setMessages([{
+          id: Date.now(),
+          type: 'bot',
+          content: response.data.message,
+          options: response.data.options
+        }]);
+      } catch (error) {
+        console.error('Error starting chat:', error);
+        setMessages([{
+          id: Date.now(),
+          type: 'bot',
+          content: 'Maaf, terjadi kesalahan. Silakan refresh halaman.'
+        }]);
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    startChat();
+  }, []);
+
+  // Mengirim pesan
+  const sendMessage = async (message = null, optionId = null) => {
+    if (!sessionId) return;
+
+    setIsLoading(true);
+
+    try {
+      // Tambah pesan user ke state
+      if (message) {
+        const userMessage = {
+          id: Date.now(),
+          type: 'user',
+          content: message
+        };
+        setMessages(prev => [...prev, userMessage]);
+        setInputMessage('');
+      }
+
+      // Kirim ke backend
+      const response = await axios.post('/api/chat/message', {
+        sessionId,
+        message: message,
+        optionId: optionId
+      });
+
+      // Tambah respons bot ke state
+      const botMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: response.data.message,
+        options: response.data.options,
+        requiresInput: response.data.requiresInput
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+      setWaitingForInput(response.data.requiresInput || false);
+
     } catch (error) {
-      console.log("error")
-      console.log(error)
-      if (error.response) {console.log(error.response)}
-      setMessage('Error');
+      console.error('Error sending message:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: 'Maaf, terjadi kesalahan. Silakan coba lagi.'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
-    // setInput("");
-    // // Simulate bot reply after 1s
-    // setTimeout(() => {
-    // }, 1000);
+  };
+
+  // Handle submit form
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (inputMessage.trim() && !isLoading) {
+      sendMessage(inputMessage.trim());
+    }
+  };
+
+  // Handle klik opsi
+  const handleOptionClick = (optionId) => {
+    sendMessage(null, optionId);
+  };
+
+  // Format pesan dengan line breaks
+  const formatMessage = (content) => {
+    return content.split('\n').map((line, index) => (
+      <span key={index}>
+        {line}
+        <br />
+      </span>
+    ));
   };
 
   // Responsive, beautiful, interactive, and accessible UI
@@ -128,27 +257,44 @@ export default function App() {
         </header>
         {/* Chat messages */}
         <main className="chat-main" ref={chatRef} tabIndex={0} aria-label="Chat messages">
-          {messages.map((msg, idx) => (
+          {messages.map((message) => (
             <div
-              key={idx}
-              className={`chat-bubble ${msg.sender === "user" ? "user" : "bot"}`}
+              key={message.id}
+              className={`chat-bubble ${message.type}`}
               aria-live="polite"
             >
               <div className="bubble-header">
-                {msg.sender === "user" ? (
+                {message.type === "user" ? (
                   <FaUserCircle className="bubble-icon user" />
                 ) : (
                   <FaRobot className="bubble-icon bot" />
                 )}
                 <span className="bubble-sender">
-                  {msg.sender === "user" ? "Anda" : "Bot"}
+                  {message.type === "user" ? "Anda" : "Bot"}
                 </span>
-                <span className="bubble-time">{msg.time}</span>
+                <span className="bubble-time">{message.time}</span>
               </div>
-              <div className="bubble-text">{msg.text}</div>
+              <div className="bubble-text">{formatMessage(message.content)}</div>
+
+              {message.options && (
+                <div className="message-options">
+                  {message.options.map((option) => (
+                    <button
+                      key={option.id}
+                      className="option-button"
+                      onClick={() => handleOptionClick(option.id)}
+                      disabled={isLoading}
+                    >
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
-          {(loading || message) && (<div
+          {(loading 
+          // || message
+        ) && (<div
               className={`chat-bubble bot`}
               aria-live="polite"
             >
@@ -163,7 +309,7 @@ export default function App() {
             </div>)}
         </main>
         {/* Input form */}
-        <form className="chat-input-form" onSubmit={handleSend} autoComplete="off">
+        <form className="chat-input-form" onSubmit={handleSubmit} autoComplete="off">
           <button
             type="button"
             className="emoji-btn"
@@ -178,7 +324,7 @@ export default function App() {
             className="chat-input"
             type="text"
             placeholder="Ketik pesan..."
-            value={input}
+            value={inputMessage}
             onChange={(e) => setInput(e.target.value)}
             aria-label="Ketik pesan"
           />
@@ -186,7 +332,7 @@ export default function App() {
             className="send-btn"
             type="submit"
             aria-label="Kirim"
-            disabled={!input.trim()}
+            disabled={!inputMessage.trim()}
           >
             <FaPaperPlane size={22} />
           </button>
