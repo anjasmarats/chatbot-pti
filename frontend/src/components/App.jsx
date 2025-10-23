@@ -14,7 +14,6 @@ export default function App() {
   const [waitingForInput, setWaitingForInput] = useState(false);
   const messagesEndRef = useRef(null);
   const [loading,setLoading] = useState(false)
-  const [feedback,setFeedback] = useState(false)
 
     const chatRef = useRef(null);
 
@@ -233,14 +232,6 @@ export default function App() {
                     ))}
                   </div>
                 )}
-                <div
-                  role="button"
-                  className="w-100 p-2 border-top border-bottom border-light"
-                  onClick={() => setFeedback(!feedback)}
-                  disabled={isLoading}
-                >
-                  Ingin menyampaikan masukkan?
-                </div>
               </div>
             </div>
           ))}
@@ -272,19 +263,14 @@ export default function App() {
           >
             <FaRegSmile size={22} />
           </button>
-          {/* <div>
-          </div> */}
-            {feedback&&(
-                <span style={{ borderRadius:"50px"}} className="bg-primary p-2 text-light">feedback</span>
-            )}
-            <input
-              className="chat-input"
-              type="text"
-              placeholder="Ketik pesan..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              aria-label="Ketik pesan"
-            />
+          <input
+            className="chat-input"
+            type="text"
+            placeholder="Silahkan berikan masukkan anda...."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            aria-label="Ketik pesan"
+          />
           <button
             className="send-btn"
             type="submit"
