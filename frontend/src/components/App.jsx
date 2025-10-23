@@ -7,72 +7,14 @@ import { url } from "../scripts/url.js";
 
 // Main App Component
 export default function App() {
-  // // pesan penampungan error
-  // const [message, setMessage] = useState('');
-  // // State for chat messages
-  // const [messages, setMessages] = useState([
-  //   {
-  //     sender: "bot",
-  //     text: "Halo! Ada yang bisa saya bantu hari ini? 😊",
-  //     time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-  //   },
-  // ]);
-  // // State for input
-  // const [input, setInput] = useState("");
-  // const [loading,setLoading] = useState(false)
-  // // Ref for chat container (for auto-scroll)
-
-  // // Handle sending message
-  // const handleSend = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     if (!input.trim()) return;
-  //     setInput("")
-  //     setLoading(true)
-  //     const userMsg = {
-  //       sender: "user",
-  //       text: input,
-  //       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-  //     };
-  //     // setResults(res.data.results);
-  //     setMessages((msgs) => [...msgs, userMsg]);
-  //     const res = await axios.post(`${url}/search`, { query: input });
-  //     // console.log(input)
-  //     if (!res.data.results) {
-  //       setLoading(false)
-  //       console.log(`res.data if = ${res.data.results}`)
-  //       setMessages((msgs) => [...msgs, res.data.message]);
-  //     } else {
-  //       setLoading(false)
-  //       console.log(`res.data else = ${res.data}`)
-  //       setMessages((msgs) => [
-  //         ...msgs,
-  //         {
-  //           sender: "bot",
-  //           text: res.data.results,
-  //           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-  //         },
-  //       ]);
-  //     }
-  //   } catch (error) {
-  //     console.log("error")
-  //     console.log(error)
-  //     if (error.response) {console.log(error.response)}
-  //     setMessage('Error');
-  //   }
-  //   // setInput("");
-  //   // // Simulate bot reply after 1s
-  //   // setTimeout(() => {
-  //   // }, 1000);
-  // };
-
-    const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [sessionId, setSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [waitingForInput, setWaitingForInput] = useState(false);
   const messagesEndRef = useRef(null);
   const [loading,setLoading] = useState(false)
+  const [feedback,setFeedback] = useState(false)
 
     const chatRef = useRef(null);
 
@@ -274,22 +216,32 @@ export default function App() {
                 </span>
                 <span className="bubble-time">{message.time}</span>
               </div>
-              <div className="bubble-text">{formatMessage(message.content)}</div>
-
-              {message.options && (
-                <div className="message-options">
-                  {message.options.map((option) => (
-                    <button
-                      key={option.id}
-                      className="option-button"
-                      onClick={() => handleOptionClick(option.id)}
-                      disabled={isLoading}
-                    >
-                      {option.text}
-                    </button>
-                  ))}
+              <div className="bubble-text mb-2">{formatMessage(message.content)}</div>
+              <div className="m-4">
+                {message.options && (
+                  <div className="message-options">
+                    {message.options.map((option) => (
+                      <div
+                        role="button"
+                        key={option.id}
+                        className="w-100 p-2 border-top border-bottom border-light"
+                        onClick={() => handleOptionClick(option.id)}
+                        disabled={isLoading}
+                      >
+                        {option.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div
+                  role="button"
+                  className="w-100 p-2 border-top border-bottom border-light"
+                  onClick={() => setFeedback(!feedback)}
+                  disabled={isLoading}
+                >
+                  Ingin menyampaikan masukkan?
                 </div>
-              )}
+              </div>
             </div>
           ))}
           {(loading 
@@ -316,18 +268,23 @@ export default function App() {
             tabIndex={-1}
             aria-label="Emoji"
             title="Emoji"
-            onClick={() => setInput((i) => i + "😊")}
+            onClick={() => setInputMessage((i) => i + "😊")}
           >
             <FaRegSmile size={22} />
           </button>
-          <input
-            className="chat-input"
-            type="text"
-            placeholder="Ketik pesan..."
-            value={inputMessage}
-            onChange={(e) => setInput(e.target.value)}
-            aria-label="Ketik pesan"
-          />
+          {/* <div>
+          </div> */}
+            {feedback&&(
+                <span style={{ borderRadius:"50px"}} className="bg-primary p-2 text-light">feedback</span>
+            )}
+            <input
+              className="chat-input"
+              type="text"
+              placeholder="Ketik pesan..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              aria-label="Ketik pesan"
+            />
           <button
             className="send-btn"
             type="submit"
