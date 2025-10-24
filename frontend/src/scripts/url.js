@@ -1,1 +1,1 @@
-export const url = "https://chatbotserver.minesimple.my.id"
+export const url = ""

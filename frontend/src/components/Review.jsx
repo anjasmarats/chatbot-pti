@@ -6,6 +6,7 @@ import { url } from "../scripts/url";
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import axios from "axios";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -121,15 +122,13 @@ export default function Review() {
       setLoadingAnalytics(true);
       setAnalyticsError(null);
       try {
-        const res = await fetch(`${url}/analytics`, {
-          method: "GET",
-          headers: { "Accept": "application/json" },
-          credentials: "same-origin",
+        const res = await axios.get(`/api/analytics`, {
+          headers: { "Content-Type": "application/json" },
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        if (mounted) setAnalytics(json.data);
-        console.log("data", json.data)
+        // if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.data.data;
+        if (mounted) setAnalytics(json);
+        console.log("data", json)
       } catch (err) {
         if (mounted) setAnalyticsError(err.message || "Failed to load analytics");
       } finally {

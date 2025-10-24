@@ -216,7 +216,7 @@ export default function App() {
                 <span className="bubble-time">{message.time}</span>
               </div>
               <div className="bubble-text mb-2">{formatMessage(message.content)}</div>
-              <div className="m-4">
+              <div className={`m-4 ${message.options ? "":"d-none"}`}>
                 {message.options && (
                   <div className="message-options">
                     {message.options.map((option) => (

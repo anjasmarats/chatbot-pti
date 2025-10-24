@@ -1,24 +1,24 @@
 // const express = require('express');
 // const cors = require('cors');
 // const { pipeline } = require('@xenova/transformers');
-// const { GoogleGenerativeAI } = require("@google/generative-ai")
-// const { Feedback,sequelize } = require("./models")
+const { GoogleGenerativeAI } = require("@google/generative-ai")
+const { Feedback,sequelize } = require("./models")
 
 // // Optional: sinkronisasi (jalankan sekali atau di bootstrap aplikasi)
-// sequelize.authenticate();
-// sequelize.sync({ alter: true }); // gunakan { force: true } hanya jika ingin drop+create
-// console.log('Database connected and models synced');
+sequelize.authenticate();
+sequelize.sync({ alter: true }); // gunakan { force: true } hanya jika ingin drop+create
+console.log('Database connected and models synced');
 
-// const API_KEY = "AIzaSyCUt934PSIt19DmdO8A3SO_ySBJaSba9MY"
+const API_KEY = "AIzaSyCUt934PSIt19DmdO8A3SO_ySBJaSba9MY"
 
-// const genAI = new GoogleGenerativeAI(API_KEY)
+const genAI = new GoogleGenerativeAI(API_KEY)
 
-// const model = genAI.getGenerativeModel({ 
-//     model: "gemini-2.5-flash",
-//     generationConfig: {
-//       responseMimeType: "application/json",
-//     },
-//   });
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash",
+    generationConfig: {
+      responseMimeType: "application/json",
+    },
+  });
 
 // const app = express();
 // const port = 5000;
@@ -134,19 +134,6 @@
 //   }
 // });
 
-// app.get('/analytics', async (req, res) => {
-//   try {
-//     const analytics = await Feedback.findAll({
-//       // attributes: ['id', 'content', 'analysis', 'createdAt', 'updatedAt'],
-//       order: [['createdAt', 'DESC']],
-//     });
-//     res.json({ success: true, data: analytics });
-//   } catch (error) {
-//     console.error('Fetch analytics error:', error);
-//     res.status(500).json({ error: 'Failed to fetch analytics' });
-//   }
-// });
-
 // app.listen(port, () => console.log(`Backend running on port ${port}`));
 
 const express = require('express');
@@ -192,7 +179,7 @@ app.post('/api/chat/start', (req, res) => {
 });
 
 // Endpoint untuk mengirim pesan
-app.post('/api/chat/message', (req, res) => {
+app.post('/api/chat/message', async(req, res) => {
   const { sessionId, message, optionId } = req.body;
   
   if (!sessionId) {
@@ -231,13 +218,31 @@ app.post('/api/chat/message', (req, res) => {
         // Langsung memberikan respons
         response = {
           message: selectedOption.message,
-          options: selectedOption.options
+          options: chatbotData.welcome.options
         };
         session.currentStep = optionId;
       }
     } else {
+          const queryResult = await model.generateContent(`
+            ${message}
+            Analisis itu dalam bahasa indonesia formal dan baik serta berikan output analisisnya berdasarkan JSON :
+            {
+              "analytics":{
+                "result":"....",
+                "isContainPositive":
+              }
+            }
+        `)
+        const result = JSON.parse(queryResult.response.text())
+        console.log(result.analytics)
+
+        await Feedback.create({
+          content: message,
+          analysis: result.analytics.result,
+          category: result.analytics.isContainPositive
+        })
       response = {
-        message: "Maaf, opsi tersebut belum tersedia. Silakan pilih opsi lain.",
+        message: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini. Ada lagi yang bisa kami bantu",
         options: chatbotData.welcome.options
       };
     }
@@ -283,6 +288,19 @@ app.post('/api/chat/message', (req, res) => {
   }
   
   res.json(response);
+});
+
+app.get('/api/analytics', async (req, res) => {
+  try {
+    const analytics = await Feedback.findAll({
+      // attributes: ['id', 'content', 'analysis', 'createdAt', 'updatedAt'],
+      order: [['createdAt', 'DESC']],
+    });
+    res.json({ success: true, data: analytics });
+  } catch (error) {
+    console.error('Fetch analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
 });
 
 // Endpoint untuk mendapatkan history chat
