@@ -1,13 +1,16 @@
-// const express = require('express');
-// const cors = require('cors');
-// const { pipeline } = require('@xenova/transformers');
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const chatbotData = require('./chatbot-data');
+
 const { GoogleGenerativeAI } = require("@google/generative-ai")
-const { Feedback,sequelize } = require("./models")
+// const { Feedback,sequelize } = require("./models");
+const { default: supabase } = require('./supabase');
 
 // // Optional: sinkronisasi (jalankan sekali atau di bootstrap aplikasi)
-sequelize.authenticate();
-sequelize.sync({ alter: true }); // gunakan { force: true } hanya jika ingin drop+create
-console.log('Database connected and models synced');
+// sequelize.authenticate();
+// sequelize.sync({ alter: true }); // gunakan { force: true } hanya jika ingin drop+create
+// console.log('Database connected and models synced');
 
 const API_KEY = "AIzaSyCUt934PSIt19DmdO8A3SO_ySBJaSba9MY"
 
@@ -19,127 +22,6 @@ const model = genAI.getGenerativeModel({
       responseMimeType: "application/json",
     },
   });
-
-// const app = express();
-// const port = 5000;
-
-// app.use(cors());
-// app.use(express.json());
-
-// // Data: Array of documents. Add your documents here.
-// let documents = require("./data.json")
-
-// // Initialize embedding model (Xenova's MiniLM for semantic search).
-// let embedder;
-// async function initEmbedder() {
-//   try {
-//     embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-//     console.log('Embedding model loaded successfully');
-//   } catch (error) {
-//     console.error('Failed to load embedding model:', error);
-//     process.exit(1); // Exit if model fails to load
-//   }
-// }
-// initEmbedder();
-
-// // Convert text to embedding vector.
-// async function getEmbedding(text) {
-//   try {
-//     const output = await embedder(text, { pooling: 'mean', normalize: true });
-//     // Ensure output.data is an array (convert Float32Array if needed).
-//     return Array.from(output.data);
-//   } catch (error) {
-//     console.error('Error generating embedding:', error);
-//     throw new Error('Embedding generation failed');
-//   }
-// }
-
-// // Compute cosine similarity between two vectors.
-// function cosineSimilarity(vecA, vecB) {
-//   // Validate inputs
-//   if (!Array.isArray(vecA) || !Array.isArray(vecB) || vecA.length !== vecB.length) {
-//     throw new Error('Invalid vectors for cosine similarity');
-//   }
-
-//   let dotProduct = 0;
-//   for (let i = 0; i < vecA.length; i++) {
-//     dotProduct += vecA[i] * vecB[i];
-//   }
-
-//   const magA = Math.sqrt(vecA.reduce((sum, val) => sum + val ** 2, 0));
-//   const magB = Math.sqrt(vecB.reduce((sum, val) => sum + val ** 2, 0));
-  
-//   // Avoid division by zero
-//   if (magA === 0 || magB === 0) return 0;
-//   return dotProduct / (magA * magB);
-// }
-
-// // Search API endpoint.
-// app.post('/search', async (req, res) => {
-//   const { query } = req.body;
-//   if (!query) {
-//     return res.status(400).json({ error: 'Query required' });
-//   }
-
-//   try {
-//     const queryEmbedding = await getEmbedding(query);
-//     const results = await Promise.all(
-//       documents.map(async (doc) => {
-//         const docEmbedding = await getEmbedding(doc.text);
-//         const similarity = cosineSimilarity(queryEmbedding, docEmbedding);
-//         return { ...doc, similarity };
-//       })
-//     );
-
-//     // Filter results with similarity > 0.5 and sort by relevance
-//     const sorted = results
-//       .filter((r) => r.similarity > 0.6)
-//       .sort((a, b) => b.similarity - a.similarity)
-    
-//     let queryResult = "" 
-    
-//     if (sorted.length === 0) {
-//       const queryResult = await model.generateContent(`
-//             ${query}
-//             Analisis itu dalam bahasa indonesia formal dan baik serta berikan output analisisnya berdasarkan JSON :
-//             {
-//               "analytics":{
-//                 "result":"....",
-//                 "isContainPositive":
-//               }
-//             }
-//         `)
-//         const result = JSON.parse(queryResult.response.text())
-//         console.log(result.analytics)
-
-//         await Feedback.create({
-//           content: query,
-//           analysis: result.analytics.result,
-//           category: result.analytics.isContainPositive
-//         })
-//       return res.json({ message: 'No results found', results: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini" });
-//     }
-    
-//     for (let i = 0; i < sorted.length; i++) {
-//       // console.log(sorted[i].text)
-//       queryResult = `${queryResult} ${sorted[i].text}`
-//     }
-
-//     console.log("queryResult",queryResult)
-
-//     res.json({ results: queryResult });
-//   } catch (error) {
-//     console.error('Search error:', error);
-//     res.status(500).json({ error: 'Search failed' });
-//   }
-// });
-
-// app.listen(port, () => console.log(`Backend running on port ${port}`));
-
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const chatbotData = require('./chatbot-data');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -236,11 +118,22 @@ app.post('/api/chat/message', async(req, res) => {
         const result = JSON.parse(queryResult.response.text())
         console.log(result.analytics)
 
-        await Feedback.create({
+        const { error } = await supabase.from("feedback").insert([{
           content: message,
           analysis: result.analytics.result,
           category: result.analytics.isContainPositive
-        })
+        }]).select()
+
+        if (error) {
+          console.error("error insert database",error)
+          return res.status(500).json()
+        }
+
+        // await Feedback.create({
+        //   content: message,
+        //   analysis: result.analytics.result,
+        //   category: result.analytics.isContainPositive
+        // })
       response = {
         message: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini. Ada lagi yang bisa kami bantu",
         options: chatbotData.welcome.options
@@ -292,10 +185,24 @@ app.post('/api/chat/message', async(req, res) => {
 
 app.get('/api/analytics', async (req, res) => {
   try {
-    const analytics = await Feedback.findAll({
-      // attributes: ['id', 'content', 'analysis', 'createdAt', 'updatedAt'],
-      order: [['createdAt', 'DESC']],
-    });
+    // const analytics = await Feedback.findAll({
+    //   // attributes: ['id', 'content', 'analysis', 'createdAt', 'updatedAt'],
+    //   order: [['createdAt', 'DESC']],
+    // });
+
+    const {data: analytics,error} = await supabase
+    .from("feedback")
+    .select('id')
+    .select('content')
+    .select('analysis')
+    .select('createdAt')
+    .select('updatedAt')
+    
+    if (error) {
+      console.error("error select data feedback analytics",error)
+      return res.status(500).json()
+    }
+
     res.json({ success: true, data: analytics });
   } catch (error) {
     console.error('Fetch analytics error:', error);
@@ -316,6 +223,8 @@ app.get('/api/chat/history/:sessionId', (req, res) => {
     currentStep: session.currentStep
   });
 });
+
+// app.post('/api/login',)
 
 // Jalankan server
 app.listen(PORT, () => {

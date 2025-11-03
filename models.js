@@ -9,6 +9,7 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST || 'localhost',
         dialect: 'mysql',
+        // dialect:'postgres',
         logging: false,
         define: {
             charset: 'utf8mb4',
@@ -65,8 +66,30 @@ const Feedback = sequelize.define('Feedback', {
     timestamps: true
 });
 
+// Model: dosen
+const Mahasiswa = sequelize.define('Mahasiswa', {
+    id: {
+        type: DataTypes.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    nama: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    nim: {
+        type: DataTypes.STRING(10),
+        allowNull: true
+    },
+    bio: {
+        type: DataTypes.TEXT, // teks panjang untuk deskripsi / bio
+        allowNull: true
+    }
+}, {
+    tableName: 'mahasiswa',
+    timestamps: true
+});
+
 module.exports = {
-    sequelize,
-    Dosen,
-    Feedback
-};
+    sequelize,Dosen,Feedback,Mahasiswa
+}
