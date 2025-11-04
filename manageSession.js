@@ -8,7 +8,7 @@ export const signToken=(payload, opts = {})=> {
 
 export const verifyToken=(req,res,next) =>{
   try {
-    const token = req.headers.authorization.split('')[1]||"";
+    const token = req.headers.authorization.split(' ')[1]||"";
     if (!token) {
       console.error("unauthenticated, token = ",token);
       return res.status(400).json({
