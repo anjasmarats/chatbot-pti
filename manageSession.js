@@ -42,18 +42,29 @@ export const cekAuth=(req,res,next) =>{
       })
     }
 
-    const authorized = jwt.verify(token, JWT_SECRET);
-
-    if (!authorized) {
-      console.error("unauthorized, token = ",token);
-      return res.status(400).json({
-        message:"Unauthorized"
-      })
-    }
+    jwt.verify(token, JWT_SECRET);
 
     return res.status(200).json()
   } catch (err) {
     console.error("error cekauth",err)
-    return false;
+    // Handle token expired error
+    if (err.name === 'TokenExpiredError') {
+      return res.status(404).json({
+        message: "Token expired",
+        expiredAt: err.expiredAt
+      });
+    }
+
+    // Handle other JWT errors
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(400).json({
+        message: "Invalid token"
+      });
+    }
+
+    // Handle other errors
+    return res.status(500).json({
+      message: "Internal server error"
+    });
   }
 }

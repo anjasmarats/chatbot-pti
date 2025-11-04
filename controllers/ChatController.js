@@ -35,7 +35,7 @@ export const getAnalytics =async (req, res) => {
 }
 
 export const message = async(req, res) => {
-  const { sessionId, message, optionId } = req.body;
+  const { sessionId, message, optionId,feedback } = req.body;
   
   if (!sessionId) {
     return res.status(400).json({ error: 'Session ID diperlukan' });
@@ -78,7 +78,8 @@ export const message = async(req, res) => {
         session.currentStep = optionId;
       }
     } else {
-          const queryResult = await model.generateContent(`
+      if (feedback) {
+        const queryResult = await model.generateContent(`
             ${message}
             Analisis itu dalam bahasa indonesia formal dan baik serta berikan output analisisnya berdasarkan JSON :
             {
@@ -107,42 +108,45 @@ export const message = async(req, res) => {
         //   analysis: result.analytics.result,
         //   category: result.analytics.isContainPositive
         // })
-      response = {
-        message: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini. Ada lagi yang bisa kami bantu",
-        options: chatbotData.welcome.options
-      };
+        response = {
+          message: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini. Ada lagi yang bisa kami bantu",
+          options: chatbotData.welcome.options
+        };
+      } else {
+        
+      }
     }
   } 
-  // Jika mengirim pesan teks
-  else if (message) {
-    if (session.currentStep && session.currentStep !== 'welcome') {
-      // Proses input khusus (seperti nomor order)
-      const processedResponse = chatbotData.processInput(session.currentStep, message);
-      response = {
-        message: processedResponse.message,
-        options: processedResponse.options
-      };
-      session.currentStep = 'welcome';
-    } else {
-      // Respons untuk pesan bebas
-      response = {
-        message: "Terima kasih atas pesan Anda! Untuk bantuan lebih cepat, silakan pilih salah satu opsi di bawah:",
-        options: chatbotData.welcome.options
-      };
-    }
+  // // Jika mengirim pesan teks
+  // else if (message) {
+  //   if (session.currentStep && session.currentStep !== 'welcome') {
+  //     // Proses input khusus (seperti nomor order)
+  //     const processedResponse = chatbotData.processInput(session.currentStep, message);
+  //     response = {
+  //       message: processedResponse.message,
+  //       options: processedResponse.options
+  //     };
+  //     session.currentStep = 'welcome';
+  //   } else {
+  //     // Respons untuk pesan bebas
+  //     response = {
+  //       message: "Terima kasih atas pesan Anda! Untuk bantuan lebih cepat, silakan pilih salah satu opsi di bawah:",
+  //       options: chatbotData.welcome.options
+  //     };
+  //   }
     
-    // Simpan history
-    session.history.push({
-      type: 'user',
-      content: message,
-      timestamp: new Date().toISOString()
-    });
-  } else {
-    response = {
-      message: "Silakan pilih opsi atau ketik pesan Anda.",
-      options: chatbotData.welcome.options
-    };
-  }
+  //   // Simpan history
+  //   session.history.push({
+  //     type: 'user',
+  //     content: message,
+  //     timestamp: new Date().toISOString()
+  //   });
+  // } else {
+  //   response = {
+  //     message: "Silakan pilih opsi atau ketik pesan Anda.",
+  //     options: chatbotData.welcome.options
+  //   };
+  // }
   
   // Simpan history bot
   if (response.message) {
