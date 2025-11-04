@@ -8,7 +8,7 @@ export const signToken=(payload, opts = {})=> {
 
 export const verifyToken=(req,res,next) =>{
   try {
-    const token = req.headers.authorization||"";
+    const token = req.headers.authorization.split('')[1]||"";
     if (!token) {
       console.error("unauthenticated, token = ",token);
       return res.status(400).json({
@@ -28,5 +28,32 @@ export const verifyToken=(req,res,next) =>{
     next()
   } catch (err) {
     return null;
+  }
+}
+
+export const cekAuth=(req,res,next) =>{
+  try {
+    const token = req.headers.authorization.split(' ')[1]||"";
+    console.log("token cekAuth",token)
+    if (!token) {
+      console.error("unauthenticated, token = ",token);
+      return res.status(400).json({
+        message:"Unauthorized"
+      })
+    }
+
+    const authorized = jwt.verify(token, JWT_SECRET);
+
+    if (!authorized) {
+      console.error("unauthorized, token = ",token);
+      return res.status(400).json({
+        message:"Unauthorized"
+      })
+    }
+
+    return res.status(200).json()
+  } catch (err) {
+    console.error("error cekauth",err)
+    return false;
   }
 }

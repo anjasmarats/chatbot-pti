@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const { Login } = require('./controllers/AuthController');
-const { verifyToken } = require('./manageSession');
+const { verifyToken, cekAuth } = require('./manageSession');
 const { getAnalytics, message, startChat } = require('./controllers/ChatController');
 
 // // Optional: sinkronisasi (jalankan sekali atau di bootstrap aplikasi)
@@ -27,6 +27,10 @@ app.post('/api/chat/message', verifyToken, message);
 
 app.get('/api/analytics', verifyToken, getAnalytics);
 
+app.post('/api/login',Login)
+
+app.get('/api/auth',cekAuth)
+
 // // Endpoint untuk mendapatkan history chat
 // app.get('/api/chat/history/:sessionId', (req, res) => {
 //   const session = chatSessions.get(req.params.sessionId);
@@ -40,8 +44,6 @@ app.get('/api/analytics', verifyToken, getAnalytics);
 //     currentStep: session.currentStep
 //   });
 // });
-
-app.post('/api/login',Login)
 
 // Jalankan server
 app.listen(PORT, () => {
