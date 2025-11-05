@@ -30,7 +30,7 @@ export const Login =async(req,res)=>{
             return res.status(404).json()
         }
 
-        console.log("login\n mahasiswa",mahasiswa,"\ndosen",dosen,"\n")
+        // console.log("login\n mahasiswa",mahasiswa,"\ndosen",dosen,"\n")
 
         const token = signToken({
             username: req.body.username,
