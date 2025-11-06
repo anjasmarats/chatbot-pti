@@ -20,5 +20,6 @@ create table Mahasiswa (
 create table Knowledge (
   id serial primary key,
   questions text not null,
-  answers text not null
+  answers text not null,
+  key varchar(255)
 )

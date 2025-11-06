@@ -113,43 +113,40 @@ export const message = async(req, res) => {
           options: chatbotData.welcome.options
         };
       } else {
+        console.log("message",message)
         if (!message) {
           return res.status(400).json({
             message:"Bad Request"
           })
         } else {
-          let result = "",list_results = []
-          const querySearch = message.split(" ")
-          for (let i = 0; i < querySearch.length; i++) {
-            const {data: knowledge,error} = await supabase
-              .from("knowledge")
-              .select("*")
-              .ilike('questions',`%${querySearch[i]}%`)
+          const {data: knowledge,error} = await supabase
+            .from("knowledge")
+            .select("answers")
+            .ilike("key",`%${message}%`)
 
-            if (error) {
-              console.error(`error query knowledge ke-${i}: ${querySearch[i]} di database\nerror`,error)
-              return res.status(500).json({
-                message:"Error"
-              })
-            }
+            console.log("knowledge",knowledge)
 
-            if (knowledge.length>0) {
-              list_results.push(...knowledge)
-            }
+          if (error) {
+            console.error(`error query knowledge ${message} di database\nerror`,error)
+            return res.status(500).json({
+              message:"Error"
+            })
           }
 
-            if (list_results.length===0) {
-              response = {
-                message: "Mohon maaf, data yang anda minta tidak ditemukan. Kami akan mencoba mempertimbangakn untuk mengupdate data informasi kami. Terimakasih telah menggunakan chatbot. Ada lagi yang bisa kami bantu?",
-                options: chatbotData.welcome.options
-              }
-
-              return res.status(200).json(response)
+          if (knowledge.length===0) {
+            response = {
+              message: "Mohon maaf, data yang anda minta tidak ditemukan. Kami akan mencoba mempertimbangakn untuk mengupdate data informasi kami. Terimakasih telah menggunakan chatbot. Ada lagi yang bisa kami bantu?",
+              options: chatbotData.welcome.options
             }
+  
+            return res.status(200).json(response)
+          }
 
-            for (let i = 0; i < list_results.length; i++) {
-              result=result+" "+list_results[i].answers
-            }
+          let result = ""
+
+          for (let i = 0; i < knowledge.length; i++) {
+            result += knowledge[i].answers+" ";
+          }
 
             response = {
               message: `${result} Ada lagi yang bisa kami bantu?`,
