@@ -16,9 +16,8 @@ export const getAnalytics =async (req, res) => {
     const {data: analytics,error} = await supabase
     .from("feedback")
     .select("*")
-    .eq('id',{ ascending: false })
-    .eq('content')
-    .eq('analysis')
+    .order('id',{ ascending: false })
+
     // .select('createdAt')
     // .select('updatedAt')
     
@@ -93,7 +92,7 @@ export const message = async(req, res) => {
         console.log(result.analytics)
 
         const { error } = await supabase.from("feedback").insert([{
-          content: message,
+          content: feedback,
           analysis: result.analytics.result,
           category: result.analytics.isContainPositive
         }]).select()
