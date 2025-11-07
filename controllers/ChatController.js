@@ -6,33 +6,6 @@ import { model } from "../gemini.js";
 // Simpan session chat (dalam production, gunakan database)
 const chatSessions = new Map();
 
-export const getAnalytics =async (req, res) => {
-  try {
-    // const analytics = await Feedback.findAll({
-    //   // attributes: ['id', 'content', 'analysis', 'createdAt', 'updatedAt'],
-    //   order: [['createdAt', 'DESC']],
-    // });
-
-    const {data: analytics,error} = await supabase
-    .from("feedback")
-    .select("*")
-    .order('id',{ ascending: false })
-
-    // .select('createdAt')
-    // .select('updatedAt')
-    
-    if (error) {
-      console.error("error select data feedback analytics",error)
-      return res.status(500).json()
-    }
-
-    return res.json({ success: true, data: analytics });
-  } catch (error) {
-    console.error('Fetch analytics error:', error);
-    return res.status(500).json({ error: 'Failed to fetch analytics' });
-  }
-}
-
 export const message = async(req, res) => {
   const { sessionId, message, optionId,feedback } = req.body;
   

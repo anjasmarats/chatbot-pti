@@ -25,6 +25,8 @@ export const verifyToken=(req,res,next) =>{
       })
     }
 
+    req.user = authorized
+
     next()
   } catch (err) {
     return null;

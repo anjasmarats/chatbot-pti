@@ -34,7 +34,8 @@ export const Login =async(req,res)=>{
 
         const token = signToken({
             username: req.body.username,
-            password: req.body.password
+            password: req.body.password,
+            role:dosen?'dosen':'mahasiswa'
         })
 
         return res.status(200).json({
