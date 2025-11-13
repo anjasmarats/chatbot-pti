@@ -17,9 +17,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 // Middleware
-app.use(cors({
-  origin:'https://chatbot-pti-fe.vercel.app'
-}));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
