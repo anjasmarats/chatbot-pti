@@ -50,82 +50,82 @@ export const message = async(req, res) => {
         session.currentStep = optionId;
       }
     } else {
-      if (feedback) {
-        const queryResult = await model.generateContent(`
-            ${feedback}
-            Analisis itu dalam bahasa indonesia formal dan baik serta berikan output analisisnya berdasarkan JSON :
-            {
-              "analytics":{
-                "result":"....",
-                "isContainPositive":
-              }
+      const queryResult = await model.generateContent(`
+          ${feedback}
+          Analisis itu dalam bahasa indonesia formal dan baik serta berikan output analisisnya berdasarkan JSON :
+          {
+            "analytics":{
+              "result":"....",
+              "isContainPositive":
             }
-        `)
-        const result = JSON.parse(queryResult.response.text())
-        console.log(result.analytics)
-
-        const { error } = await supabase.from("feedback").insert([{
-          content: feedback,
-          analysis: result.analytics.result,
-          category: result.analytics.isContainPositive
-        }]).select()
-
-        if (error) {
-          console.error("error insert database",error)
-          return res.status(500).json()
-        }
-
-        // await Feedback.create({
-        //   content: message,
-        //   analysis: result.analytics.result,
-        //   category: result.analytics.isContainPositive
-        // })
-        response = {
-          message: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini. Ada lagi yang bisa kami bantu",
-          options: chatbotData.welcome.options
-        };
-      } else {
-        console.log("message",message)
-        if (!message) {
-          return res.status(400).json({
-            message:"Bad Request"
-          })
-        } else {
-          const {data: knowledge,error} = await supabase
-            .from("knowledge")
-            .select("answers")
-            .ilike("key",`%${message}%`)
-
-            console.log("knowledge",knowledge)
-
-          if (error) {
-            console.error(`error query knowledge ${message} di database\nerror`,error)
-            return res.status(500).json({
-              message:"Error"
-            })
           }
+      `)
+      const result = JSON.parse(queryResult.response.text())
+      console.log(result.analytics)
 
-          if (knowledge.length===0) {
-            response = {
-              message: "Mohon maaf, data yang anda minta tidak ditemukan. Kami akan mencoba mempertimbangakn untuk mengupdate data informasi kami. Terimakasih telah menggunakan chatbot. Ada lagi yang bisa kami bantu?",
-              options: chatbotData.welcome.options
-            }
-  
-            return res.status(200).json(response)
-          }
+      const { error } = await supabase.from("feedback").insert([{
+        content: feedback,
+        analysis: result.analytics.result,
+        category: result.analytics.isContainPositive
+      }]).select()
 
-          let result = ""
-
-          for (let i = 0; i < knowledge.length; i++) {
-            result += knowledge[i].answers+" ";
-          }
-
-            response = {
-              message: `${result} Ada lagi yang bisa kami bantu?`,
-              options: chatbotData.welcome.options
-            }
-        }
+      if (error) {
+        console.error("error insert database",error)
+        return res.status(500).json()
       }
+
+      // await Feedback.create({
+      //   content: message,
+      //   analysis: result.analytics.result,
+      //   category: result.analytics.isContainPositive
+      // })
+      response = {
+        message: "Masukkan anda telah kami proses. Terimakasih telah menggunakan chatbot ini. Ada lagi yang bisa kami bantu",
+        options: chatbotData.welcome.options
+      };
+      // if (feedback) {
+      // } else {
+      //   console.log("message",message)
+      //   if (!message) {
+      //     return res.status(400).json({
+      //       message:"Bad Request"
+      //     })
+      //   } else {
+      //     const {data: knowledge,error} = await supabase
+      //       .from("knowledge")
+      //       .select("answers")
+      //       .ilike("key",`%${message}%`)
+
+      //       console.log("knowledge",knowledge)
+
+      //     if (error) {
+      //       console.error(`error query knowledge ${message} di database\nerror`,error)
+      //       return res.status(500).json({
+      //         message:"Error"
+      //       })
+      //     }
+
+      //     if (knowledge.length===0) {
+      //       response = {
+      //         message: "Mohon maaf, data yang anda minta tidak ditemukan. Kami akan mencoba mempertimbangakn untuk mengupdate data informasi kami. Terimakasih telah menggunakan chatbot. Ada lagi yang bisa kami bantu?",
+      //         options: chatbotData.welcome.options
+      //       }
+  
+      //       return res.status(200).json(response)
+      //     }
+
+      //     let result = ""
+
+      //     for (let i = 0; i < knowledge.length; i++) {
+      //       result += knowledge[i].answers+" ";
+      //     }
+
+      //       response = {
+      //         message: `${result} Ada lagi yang bisa kami bantu?`,
+      //         options: chatbotData.welcome.options
+      //       }
+      //   }
+      // }
     }
   } 
   // // Jika mengirim pesan teks
