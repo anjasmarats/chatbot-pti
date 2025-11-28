@@ -44,9 +44,11 @@ export const cekAuth=(req,res,next) =>{
       })
     }
 
-    jwt.verify(token, JWT_SECRET);
+    const payload = jwt.verify(token, JWT_SECRET);
 
-    return res.status(200).json()
+    return res.status(200).json({
+      data:payload
+    })
   } catch (err) {
     console.error("error cekauth",err)
     // Handle token expired error
