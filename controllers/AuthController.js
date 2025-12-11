@@ -10,29 +10,29 @@ export const Login =async(req,res)=>{
             return res.status(400).json()
         }
 
-        const {data: mahasiswa, error} = await supabase.from("mahasiswa")
+        const {data: mahasiswa, error:errMhs} = await supabase.from("mahasiswa")
         .select("*")
         .eq("username",req.body.username)
         .eq("password",req.body.password)
         .single()
         
-        const {data: dosen, error: err} = await supabase.from("dosen")
+        const {data: dosen, error: errDosen} = await supabase.from("dosen")
         .select("*")
         .eq("username",req.body.username)
         .eq("password",req.body.password)
         .single()
 
-        if (error) {
-            console.error("error mahasiswa login supabase",error)
+        if (errMhs && errMhs.code!=="PGRST116") {
+            console.error("error mahasiswa login supabase",errMhs)
             return res.status(500).json()
         }
         
-        if (err) {
-            console.error("error dosen login supabase",err)
+        if (errDosen && errDosen.code!=="PGRST116") {
+            console.error("error dosen login supabase",errDosen)
             return res.status(500).json()
         }
 
-        if (mahasiswa.length===0 && dosen.length===0) {
+        if ((errMhs && errMhs.code ==='PGRST116') && (errDosen && errDosen.code ==='PGRST116')) {
             console.error("error query database login \nusername",req.body.username,"\npassword",req.body.password,"\nmahasiswa",mahasiswa,"\ndosen",dosen)
             return res.status(404).json()
         }
