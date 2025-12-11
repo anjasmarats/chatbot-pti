@@ -46,7 +46,9 @@ export const getAnalytics =async (req, res) => {
       return res.status(500).json()
     }
 
-    return res.json({ success: true, data: analytics,dosen:req.user.role==="dosen" });
+    console.log("analytics",analytics)
+
+    return res.json({data: analytics,dosen:req.user.role==="dosen" });
   } catch (error) {
     console.error('Fetch analytics error:', error);
     return res.status(500).json({ error: 'Failed to fetch analytics' });
