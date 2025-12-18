@@ -16,3 +16,9 @@ create table Mahasiswa (
   username varchar(40) not null,
   password varchar(20) not null
 );
+
+create table Data (
+  id serial primary key,
+  question varchar(40) not null,
+  answer text not null
+);

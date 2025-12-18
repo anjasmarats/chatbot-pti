@@ -6,6 +6,7 @@ const { Login } = require('./controllers/AuthController');
 const { verifyToken, cekAuth } = require('./manageSession');
 const { message, startChat } = require('./controllers/ChatController');
 const { deleteDataAnalytics, getAnalytics } = require('./controllers/AnalyticsController');
+const { sendQuestion, allQuestions } = require('./controllers/QuestionController');
 
 // // Optional: sinkronisasi (jalankan sekali atau di bootstrap aplikasi)
 // sequelize.authenticate();
@@ -34,6 +35,10 @@ app.post('/api/login',Login)
 app.get('/api/auth',cekAuth)
 
 app.delete('/api/delete/analytics/:id', verifyToken,deleteDataAnalytics)
+
+app.post('/api/question/add', sendQuestion);
+
+app.get('/api/data/all',allQuestions)
 
 // // Endpoint untuk mendapatkan history chat
 // app.get('/api/chat/history/:sessionId', (req, res) => {
